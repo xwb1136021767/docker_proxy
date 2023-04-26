@@ -19,7 +19,7 @@ require (
 	github.com/k8stopologyawareschedwg/noderesourcetopology-api v0.1.1
 	github.com/mohae/deepcopy v0.0.0-20170603005431-491d3605edfb
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.19.0
+	github.com/onsi/gomega v1.24.1
 	github.com/opencontainers/runc v1.0.2
 	github.com/openkruise/kruise-api v1.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
@@ -33,18 +33,18 @@ require (
 	golang.org/x/crypto v0.1.0
 	golang.org/x/net v0.8.0
 	golang.org/x/sys v0.6.0
-	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8
+	golang.org/x/time v0.3.0
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/sqlite v1.4.4
 	gorm.io/gorm v1.24.0
-	k8s.io/api v0.26.0
-	k8s.io/apimachinery v0.26.0
+	k8s.io/api v0.26.1
+	k8s.io/apimachinery v0.26.1
 	k8s.io/apiserver v0.26.0
-	k8s.io/client-go v0.26.0
+	k8s.io/client-go v0.26.1
 	k8s.io/code-generator v0.26.0
-	k8s.io/component-base v0.26.0
+	k8s.io/component-base v0.26.1
 	k8s.io/component-helpers v0.26.0
 	k8s.io/cri-api v0.22.6
 	k8s.io/klog/v2 v2.80.1
@@ -53,7 +53,7 @@ require (
 	k8s.io/kubelet v0.22.6
 	k8s.io/kubernetes v1.22.6
 	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448
-	sigs.k8s.io/controller-runtime v0.10.3
+	sigs.k8s.io/controller-runtime v0.14.6
 	sigs.k8s.io/descheduler v0.26.0
 	sigs.k8s.io/scheduler-plugins v0.22.6
 	sigs.k8s.io/yaml v1.3.0
@@ -102,6 +102,7 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/emicklei/go-restful v2.9.5+incompatible // indirect
 	github.com/euank/go-kmsg-parser v2.0.0+incompatible // indirect
+	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -191,7 +192,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v0.20.0 // indirect
 	go.opentelemetry.io/otel/trace v1.10.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
-	go.uber.org/zap v1.19.0 // indirect
+	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
 	golang.org/x/sync v0.1.0 // indirect
@@ -208,7 +209,7 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/warnings.v0 v0.1.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.22.6 // indirect
+	k8s.io/apiextensions-apiserver v0.26.1 // indirect
 	k8s.io/cloud-provider v0.22.6 // indirect
 	k8s.io/csi-translation-lib v0.22.6 // indirect
 	k8s.io/gengo v0.0.0-20220902162205-c0856e24416d // indirect
