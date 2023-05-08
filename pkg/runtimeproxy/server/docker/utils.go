@@ -113,6 +113,7 @@ func HostConfigToResource(config *container.HostConfig) *v1alpha1.LinuxContainer
 }
 
 func getContainerID(urlPath string) (string, error) {
+	klog.Infoln("urlPath = ", urlPath)
 	tokens := strings.Split(urlPath, "/")
 	if len(tokens) < 2 {
 		return "", fmt.Errorf("failed to get container id from path %s", urlPath)

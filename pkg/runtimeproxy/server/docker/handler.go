@@ -22,6 +22,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
@@ -37,6 +40,7 @@ import (
 
 func (d *RuntimeManagerDockerServer) HandleCreateContainer(ctx context.Context, wr http.ResponseWriter, req *http.Request) {
 	// get create container config
+	klog.Infoln("Get Create Container Request")
 	dec := runconfig.ContainerDecoder{}
 	ContainerConfig, hostConfig, networkingConfig, err := dec.DecodeConfig(req.Body)
 	if err != nil {
@@ -172,6 +176,27 @@ func (d *RuntimeManagerDockerServer) HandleCreateContainer(ctx context.Context, 
 	}
 }
 
+func isTransDone(checkpointDir string) bool {
+	var found bool
+	err := filepath.Walk(checkpointDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Printf("failed to access path %q: %v\n", path, err)
+			return err
+		}
+		if info.Name() == "done" {
+			found = true
+			return filepath.SkipDir // 优化：如果已经找到了文件，就跳过子目录。
+		}
+		return nil
+	})
+	if err != nil {
+		klog.Errorf("failed to walk directory %q: %v\n", checkpointDir, err)
+		os.Exit(1)
+	}
+
+	return found
+}
+
 func (d *RuntimeManagerDockerServer) HandleStartContainer(ctx context.Context, wr http.ResponseWriter, req *http.Request) {
 	// we need to get the container id, because we need it to get info from checkpoint
 	containerID, err := getContainerID(req.URL.Path)
@@ -180,32 +205,74 @@ func (d *RuntimeManagerDockerServer) HandleStartContainer(ctx context.Context, w
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	klog.Infoln("containerID = ", containerID)
+	/*
+		拦截start请求的逻辑
+		1. 找到容器的pause容器ID
+		2. 判断pause容器lables中是否含有对应的标签
+	*/
+
 	containerMeta := store.GetContainerInfo(containerID)
-	runtimeHookPath := config.NoneRuntimeHookPath
-	var hookReq interface{}
 	if containerMeta != nil {
-		if !types.SkipRuntimeHook(containerMeta.PodLabels) {
-			runtimeHookPath = config.StartContainer
-			hookReq = containerMeta.GetContainerResourceHookRequest()
+		containerName := containerMeta.ContainerMeta.Name
+		klog.Infoln("containerMeta = ", containerMeta)
+
+		if taskID, ok := containerMeta.PodAnnotations["podmigrate.suanli.com/taskID"]; ok {
+			klog.Infof("/tmp/checkpoint/%s", taskID)
+
+			// 判断checkpoint文件是否传输完成
+			filePath := fmt.Sprintf("/tmp/checkpoint/%s/%s", taskID, containerName)
+			finalDumpPath := filePath + "/" + containerName
+			for {
+				if isTransDone(finalDumpPath) {
+					break
+				}
+				klog.Infoln("FinalDump Files are transfering")
+			}
+			klog.Infoln("FinalDump Files have been transferred succcessfully!")
+			// if !isTransDone(filePath) {
+			// 	//final checkpoint文件传输还没有完成, return
+			// 	return
+			// }
+
+			if _, ok := os.Stat(filePath); ok == nil {
+				klog.Infoln("Set checkpoint arg")
+				c := url.Values{}
+				c.Set("checkpoint", containerName)
+				c.Set("checkpoint-dir", filePath)
+				req.URL.RawQuery = c.Encode()
+
+				klog.Infoln("req url = ", req.URL)
+			}
 		}
 	}
 
-	// no need to care about the resp
-	if _, err, failPolicy := d.dispatcher.Dispatch(ctx, runtimeHookPath, config.PreHook, hookReq); err != nil {
-		klog.Errorf("failed to call pre start container hook server %v, failPolicy: %v", err, failPolicy)
-		if failPolicy == config.PolicyFail {
-			http.Error(wr, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+	// runtimeHookPath := config.NoneRuntimeHookPath
+	// var hookReq interface{}
+	// if containerMeta != nil {
+	// 	if !types.SkipRuntimeHook(containerMeta.PodLabels) {
+	// 		runtimeHookPath = config.StartContainer
+	// 		hookReq = containerMeta.GetContainerResourceHookRequest()
+	// 	}
+	// }
+
+	// // no need to care about the resp
+	// if _, err, failPolicy := d.dispatcher.Dispatch(ctx, runtimeHookPath, config.PreHook, hookReq); err != nil {
+	// 	klog.Errorf("failed to call pre start container hook server %v, failPolicy: %v", err, failPolicy)
+	// 	if failPolicy == config.PolicyFail {
+	// 		http.Error(wr, err.Error(), http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// }
 
 	d.Direct(wr, req)
 
-	if _, err, _ := d.dispatcher.Dispatch(ctx, runtimeHookPath, config.PostHook, hookReq); err != nil {
-		klog.Errorf("failed to call post start container hook server %v", err)
-		http.Error(wr, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// if _, err, _ := d.dispatcher.Dispatch(ctx, runtimeHookPath, config.PostHook, hookReq); err != nil {
+	// 	klog.Errorf("failed to call post start container hook server %v", err)
+	// 	http.Error(wr, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 }
 
 func (d *RuntimeManagerDockerServer) HandleStopContainer(ctx context.Context, wr http.ResponseWriter, req *http.Request) {
