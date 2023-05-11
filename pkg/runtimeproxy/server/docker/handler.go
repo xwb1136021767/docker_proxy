@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	exec "os/exec"
 	"path/filepath"
 	"strings"
 
@@ -36,6 +37,13 @@ import (
 	resource_executor "github.com/koordinator-sh/koordinator/pkg/runtimeproxy/resexecutor"
 	"github.com/koordinator-sh/koordinator/pkg/runtimeproxy/server/types"
 	"github.com/koordinator-sh/koordinator/pkg/runtimeproxy/store"
+)
+
+const (
+	dockerDir     = "/var/lib/docker/"
+	fileDriver    = "overlay2"
+	rwFilesDir    = "/tmp/rwdir/"
+	checkpointDir = "/tmp/checkpoint/"
 )
 
 func (d *RuntimeManagerDockerServer) HandleCreateContainer(ctx context.Context, wr http.ResponseWriter, req *http.Request) {
@@ -197,6 +205,27 @@ func isTransDone(checkpointDir string) bool {
 	return found
 }
 
+func getMountID(containerID string) (string, error) {
+	mount_path := dockerDir + "image/" + fileDriver + "/layerdb/mounts/" + containerID + "/mount-id"
+	klog.Infoln("mount_path = %s", mount_path)
+	mnt_fd, err := os.Open(mount_path)
+	if err != nil {
+		klog.Errorln("open mount-id failed")
+		return "", err
+	}
+
+	buf := make([]byte, 256)
+	n, err := mnt_fd.Read(buf)
+	if err != nil {
+		klog.Errorln("can read mount-id, err = ", err)
+		return "", nil
+	}
+	cacheID := string(buf[0:n])
+	klog.Infoln("cacheID = ", cacheID)
+	return cacheID, nil
+}
+
+
 func (d *RuntimeManagerDockerServer) HandleStartContainer(ctx context.Context, wr http.ResponseWriter, req *http.Request) {
 	// we need to get the container id, because we need it to get info from checkpoint
 	containerID, err := getContainerID(req.URL.Path)
@@ -220,9 +249,25 @@ func (d *RuntimeManagerDockerServer) HandleStartContainer(ctx context.Context, w
 
 		if taskID, ok := containerMeta.PodAnnotations["podmigrate.suanli.com/taskID"]; ok {
 			klog.Infof("/tmp/checkpoint/%s", taskID)
+			//copy读写层文件
+			cacheID, err := getMountID(containerID)
+			if err != nil {
+				klog.Errorln("get mount-id failed")
+				return
+			}
 
-			// 判断checkpoint文件是否传输完成
-			filePath := fmt.Sprintf("/tmp/checkpoint/%s/%s", taskID, containerName)
+			srcDir := "/tmp/checkpoint/overlay2/" + taskID + "/" + containerName + "/diff"
+			dstDir := "/var/lib/docker/overlay2/" + cacheID + "/diff"
+			cmd := exec.Command("cp", "-a", srcDir, dstDir)
+			err = cmd.Run()
+			if err != nil {
+				fmt.Println("Error copying files:", err)
+				return
+			}
+			fmt.Println("RW layer files copied successfully!")
+			//判断checkpoint文件是否传输完成
+			filePath := fmt.Sprintf("/tmp/checkpoint/%s", taskID)
+			
 			finalDumpPath := filePath + "/" + containerName
 			for {
 				if isTransDone(finalDumpPath) {
@@ -231,6 +276,7 @@ func (d *RuntimeManagerDockerServer) HandleStartContainer(ctx context.Context, w
 				klog.Infoln("FinalDump Files are transfering")
 			}
 			klog.Infoln("FinalDump Files have been transferred succcessfully!")
+			
 			// if !isTransDone(filePath) {
 			// 	//final checkpoint文件传输还没有完成, return
 			// 	return
