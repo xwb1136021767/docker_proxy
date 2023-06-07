@@ -11,7 +11,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 	github.com/golang/mock v1.6.0
-	github.com/golang/protobuf v1.5.2
+	github.com/golang/protobuf v1.5.3
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
 	github.com/hodgesds/perf-utils v0.5.1
@@ -19,7 +19,7 @@ require (
 	github.com/k8stopologyawareschedwg/noderesourcetopology-api v0.1.1
 	github.com/mohae/deepcopy v0.0.0-20170603005431-491d3605edfb
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.19.0
+	github.com/onsi/gomega v1.27.8
 	github.com/opencontainers/runc v1.0.2
 	github.com/openkruise/kruise-api v1.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
@@ -31,8 +31,8 @@ require (
 	go.uber.org/atomic v1.10.0
 	go.uber.org/multierr v1.6.0
 	golang.org/x/crypto v0.1.0
-	golang.org/x/net v0.8.0
-	golang.org/x/sys v0.6.0
+	golang.org/x/net v0.10.0
+	golang.org/x/sys v0.8.0
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1
@@ -105,7 +105,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/swag v0.21.1 // indirect
@@ -192,12 +192,12 @@ require (
 	go.opentelemetry.io/otel/trace v1.10.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
-	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
-	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/term v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
-	golang.org/x/tools v0.6.0 // indirect
+	golang.org/x/sync v0.2.0 // indirect
+	golang.org/x/term v0.8.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/tools v0.9.1 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/api v0.30.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
